@@ -1,12 +1,16 @@
-readInteger s = read s :: Integer
+readInteger :: String -> Integer
+readInteger s = read s
 
 pairs :: Num a => [a] -> [(a, a)]
 pairs (x:y:xs) = [(x, y)] ++ pairs ([y] ++ xs)
-pairs [x] = []
+pairs [_] = []
 pairs [] = []
 
+pairs' :: Num a => [a] -> [(a, a)]
 pairs' a = zip a (tail a) -- unsafe but oh well
 
-sol lines = length $ filter (\(x,y) -> x < y) $ pairs' $ map readInteger lines
+sol :: [String] -> Int
+sol = length . filter (\(x,y) -> x < y) . pairs' . map readInteger 
 
+main :: IO ()
 main = interact $ show . sol . lines
