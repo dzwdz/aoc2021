@@ -1,5 +1,5 @@
 readInteger :: String -> Integer
-readInteger s = read s
+readInteger = read
 
 pairs :: Num a => [a] -> [(a, a)]
 pairs (x:y:xs) = [(x, y)] ++ pairs ([y] ++ xs)
