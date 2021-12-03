@@ -1,5 +1,8 @@
 import Data.List
 import Data.Ord
+import Debug.Trace
+
+coolTrace a = trace (show a) a
 
 readBase2 :: String -> Integer
 readBase2 = loop . reverse where
@@ -33,7 +36,20 @@ part1 input = gamma * epsilon
     gamma   = readBase2 $ map mostFrequent $ rotate input
     epsilon = readBase2 $ map leastFrequent $ rotate input
 
-part2 input = "TODO"
+
+rate determinant list = rate' $ zip list (map readBase2 list)
+  where
+    rate' [(_, og)] = og
+    rate' list = rate' $ map (\(x,og) -> (tail x, og)) matching
+      where
+        dumbWeight x = x ++ x ++ ['1'] -- in case of a tie, 1 is supposed to be the most common bit
+
+        targetBit = determinant $ dumbWeight $ map (head . fst) list
+        matching = filter ((targetBit ==) . head . fst) list
+
+part2 input = oxyRating * co2Rating where
+  oxyRating = rate  mostFrequent input
+  co2Rating = rate leastFrequent input
 
 
 main :: IO ()
