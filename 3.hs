@@ -18,18 +18,20 @@ uniq :: Eq a => [a] -> [a]
 uniq (x:xs) = [x] ++ (filter (x /=) $ uniq xs)
 uniq [] = []
 
--- creates a list sorted from least to most frequent
-mostFrequent :: Eq a => [a] -> [a]
-mostFrequent list = sortBy (comparing count) $ uniq list
-  where
-    count el = length $ filter (\x -> x == el) list
+mostFrequent :: Eq a => [a] -> a
+mostFrequent list = maximumBy (comparing count) $ uniq list
+  where  count el = length $ filter (\x -> x == el) list
+
+leastFrequent :: Eq a => [a] -> a
+leastFrequent list = minimumBy (comparing count) $ uniq list
+  where  count el = length $ filter (\x -> x == el) list
 
 
 part1 input = gamma * epsilon
   where
     freqs   = map mostFrequent $ rotate input
-    gamma   = readBase2 $ map last freqs
-    epsilon = readBase2 $ map head freqs
+    gamma   = readBase2 $ map mostFrequent $ rotate input
+    epsilon = readBase2 $ map leastFrequent $ rotate input
 
 part2 input = "TODO"
 
