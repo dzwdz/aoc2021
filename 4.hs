@@ -17,6 +17,7 @@ split delim arr =
       post = tail post'
       result = [pre] ++ split delim post
 
+
 findMatches :: Eq a => [a] -> [[a]] -> [[Bool]]
 findMatches nums =
   map (map (\x->elem x nums))
@@ -27,13 +28,13 @@ checkStraights board = row || column where
   row    = elem match board
   column = elem match $ transpose board
 
-partialScore nums board = sum $ filter (\x->not $ elem x nums) $ concat board
-
 boardInfo nums board = (score, time) where
   scores = map score (inits nums) where
+    partialScore nums =
+      sum $ filter (\x->not $ elem x nums) $ concat board
     score nums =
       if (checkStraights $ findMatches nums board)
-        then Just (partialScore nums board * last nums)
+        then Just (partialScore nums * last nums)
         else Nothing
 
   score = head $ catMaybes scores
