@@ -17,7 +17,6 @@ split delim arr =
       post = tail post'
       result = [pre] ++ split delim post
 
-
 findMatches :: Eq a => [a] -> [[a]] -> [[Bool]]
 findMatches nums =
   map (map (\x->elem x nums))
@@ -30,21 +29,23 @@ checkStraights board = row || column where
 
 partialScore nums board = sum $ filter (\x->not $ elem x nums) $ concat board
 
-part1 l = res where
-  (nums':boards') = split "" l
+
+preprocess str = (nums, boards) where
+  (nums':boards') = split "" $ lines str
   nums = map readInteger $ split ',' $ head nums'
   boards = map (map (map readInteger . filter ("" /=) . split ' ')) boards'
+
+part1 (nums, boards) = res where
   check nums board =
     if (checkStraights $ findMatches nums board)
       then Just (partialScore nums board * last nums)
       else Nothing
   res = head $ head $ filter (not.null) $ map (catMaybes) $ map (\n -> map (check n) boards) (inits nums)
 
-
 part2 _ = "TODO"
 
 
 main :: IO ()
-main = interact $ wrapper . lines where
+main = interact $ wrapper . preprocess where
   wrapper arg = "part 1:\n" ++ (show $ part1 arg)
          ++ "\n\npart 2:\n" ++ (show $ part2 arg)
