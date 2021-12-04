@@ -29,20 +29,27 @@ checkStraights board = row || column where
 
 partialScore nums board = sum $ filter (\x->not $ elem x nums) $ concat board
 
+boardInfo nums board = (score, time) where
+  scores = map score (inits nums) where
+    score nums =
+      if (checkStraights $ findMatches nums board)
+        then Just (partialScore nums board * last nums)
+        else Nothing
+
+  score = head $ catMaybes scores
+  time = length $ filter (Nothing ==) scores
+
 
 preprocess str = (nums, boards) where
   (nums':boards') = split "" $ lines str
   nums = map readInteger $ split ',' $ head nums'
   boards = map (map (map readInteger . filter ("" /=) . split ' ')) boards'
 
-part1 (nums, boards) = res where
-  check nums board =
-    if (checkStraights $ findMatches nums board)
-      then Just (partialScore nums board * last nums)
-      else Nothing
-  res = head $ head $ filter (not.null) $ map (catMaybes) $ map (\n -> map (check n) boards) (inits nums)
+part1 (nums, boards) =
+  minimumBy (comparing snd) $ map (boardInfo nums) boards
 
-part2 _ = "TODO"
+part2 (nums, boards) =
+  maximumBy (comparing snd) $ map (boardInfo nums) boards
 
 
 main :: IO ()
