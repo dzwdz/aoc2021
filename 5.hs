@@ -22,11 +22,13 @@ isStraight ((x1, y1), (x2, y2)) =
 
 smartRange x y
   | x < y     = [x..y]
-  | otherwise = [y..x]
+  | otherwise = reverse [y..x]
 
 linePoints ((x1, y1), (x2, y2))
   | x1 == x2 = map (\y->(x1, y)) $ smartRange y1 y2
   | y1 == y2 = map (\x->(x, y1)) $ smartRange x1 x2
+  | abs (x2 - x1) == abs (y2 - y1) =
+      zip (smartRange x1 x2) (smartRange y1 y2)
 
 twiceOrMore list = nub $ dubs $ sorted list where
   sorted = sortBy (comparing $ \(x,y) -> x * 10000 + y)
@@ -44,7 +46,7 @@ preprocess str = map processLine $ lines str where
 
 part1 = length . twiceOrMore . concat . map linePoints . filter isStraight
 
-part2 _ = "TODO"
+part2 = length . twiceOrMore . concat . map linePoints
 
 main :: IO ()
 main = interact $ wrapper . preprocess where
