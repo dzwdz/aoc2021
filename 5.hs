@@ -15,6 +15,7 @@ split delim arr =
       post = tail post'
       result = [pre] ++ split delim post
 
+
 arrToPair [a, b] = (a, b)
 
 isStraight ((x1, y1), (x2, y2)) =
@@ -30,8 +31,7 @@ linePoints ((x1, y1), (x2, y2))
   | abs (x2 - x1) == abs (y2 - y1) =
       zip (smartRange x1 x2) (smartRange y1 y2)
 
-twiceOrMore list = dubs $ sorted list where
-  sorted = sortBy (comparing $ \(x,y) -> x * 10000 + y)
+twiceOrMore = dubs . sort where
   dubs (x:xs@(y:_))
     | x == y    = [x] ++ dubs (dropWhile (x ==) xs)
     | otherwise = dubs xs
