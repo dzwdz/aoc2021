@@ -38,13 +38,12 @@ step counts = res where
   res = modifyAt 6 (+ head counts) rotated
 
 
-preprocess = map readInteger . split ','
+preprocess input = counts where
+  fish = map readInteger $ split ',' input
+  counts = map (\i -> elemCount i fish) [0..8]
 
-part1 input = res where
-  initial = map (\i -> elemCount i input) [0..8]
-  res = sum $ nTimes 80 step initial
-
-part2 _ = "TODO"
+part1 input = sum $ nTimes 80 step input
+part2 input = sum $ nTimes 256 step input
 
 main :: IO ()
 main = interact $ wrapper . preprocess where
