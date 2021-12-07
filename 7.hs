@@ -15,14 +15,20 @@ split delim arr =
       post = tail post'
       result = [pre] ++ split delim post
 
-cost crabs target = sum $ map (\x -> abs $ target - x) crabs
+cost crabs fn target = sum $ map (\x -> fn $ abs $ target - x) crabs
+
+sumUntil x = sum [1..x]
+sumUntil' x = x * (x + 1) `div` 2
 
 
 preprocess = map readInteger . split ','
+part1 crabs = minimum $ map (cost crabs id) (nub crabs)
 
-part1 crabs = minimum $ map (cost crabs) (nub crabs)
-
-part2 _ = "TODO"
+part2 crabs = minimum $ map (cost crabs sumUntil') range
+  where
+    min = minimum crabs
+    max = maximum crabs
+    range = [min..max]
 
 main :: IO ()
 main = interact $ wrapper . preprocess where
