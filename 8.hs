@@ -20,9 +20,12 @@ split delim arr =
 preprocess = map processLine . lines where
   processLine line = map (map sort) $ split "|" $ words line
 
+part1 :: [[[String]]] -> Int
 part1 = length . concat . map stuff where
   stuff [_, output] = filter (\x->elem (length x) [2, 3, 4, 7]) output
 
+-- "smart" solution, around 10ms
+part2 :: [[[String]]] -> Int
 part2 = sum . map translate where
   translate [input, output] = asNumber where
     ofLength len = filter (\a -> length a == len) input
@@ -50,7 +53,29 @@ part2 = sum . map translate where
     digits = map (\d -> fromJust $ elemIndex d digitList) output
     asNumber = foldr (\d n -> n * 10 + d) 0 $ reverse digits
 
+-- nice bruteforce solution, about 920ms
+part2' :: [[[String]]] -> Int
+part2' = sum . map translate where
+  ogDigits = ["abcefg", "cf", "acdeg", "acdfg", "bcdf",
+              "abdfg", "abdefg", "acf", "abcdefg", "abcdfg"]
+  ogKey = "abcdefg"
+  permute key = sort
+              . map (key !!)
+              . map (\x -> fromJust $ elemIndex x ogKey)
+  allTrans = map (\key -> map (permute key) ogDigits)
+           $ permutations "abcdefg"
+
+  translate [input', output'] = number where
+    input  = map sort input'
+    output = map sort output'
+    correctTrans = head $ filter (\t -> sort t == sort input) allTrans
+    findDigit d = fromJust $ elemIndex d correctTrans
+    digits = map findDigit output
+    number = foldr (\d n -> n * 10 + d) 0 $ reverse digits
+
+
 main :: IO ()
 main = interact $ wrapper . preprocess where
   wrapper arg = "part 1:\n" ++ (show $ part1 arg)
          ++ "\n\npart 2:\n" ++ (show $ part2 arg)
+         ++ "\n\npart 2 alt:\n" ++ (show $ part2' arg)
