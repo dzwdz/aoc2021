@@ -16,6 +16,15 @@ split delim arr =
       post = tail post'
       result = [pre] ++ split delim post
 
+zipmap :: (a -> b) -> [a] -> [(a, b)]
+zipmap fn a = zip a (map fn a)
+
+count :: Eq a => a -> [a] -> Int
+count el = length . filter (\x -> x == el)
+
+
+ogDigits = ["abcefg", "cf", "acdeg", "acdfg", "bcdf",
+            "abdfg", "abdefg", "acf", "abcdefg", "abcdfg"]
 
 preprocess = map processLine . lines where
   processLine line = map (map sort) $ split "|" $ words line
@@ -24,58 +33,27 @@ part1 :: [[[String]]] -> Int
 part1 = length . concat . map stuff where
   stuff [_, output] = filter (\x->elem (length x) [2, 3, 4, 7]) output
 
--- "smart" solution, around 10ms
-part2 :: [[[String]]] -> Int
 part2 = sum . map translate where
-  translate [input, output] = asNumber where
-    ofLength len = filter (\a -> length a == len) input
+  -- returns the digits which are the only ones of some length, sorted from shortest
+  outliers :: [String] -> [String]
+  outliers digitSet = sortBy (comparing length)
+                    $ filter isOutlier digitSet where
+      isOutlier digit = count (length digit) (map length digitSet) == 1
 
-    d1 = head $ ofLength 2
-    d7 = head $ ofLength 3
-    d4 = head $ ofLength 4
-    d8 = head $ ofLength 7
-    d3 = head
-       $ filter (\x -> intersect x d1 == d1) -- d3 
-       $ ofLength 5                          -- d2, d3, d5
-    [d2, d5] = sortBy (comparing
-                            (length . intersect d4)) -- [d2 (len 2), d5 (len 3)]
-             $ filter (/= d3) -- d2 ; d5
-             $ ofLength 5     -- d2 ; d3 ; d5
-    d9 = head
-       $ filter (\x -> intersect x d4 == d4)
-       $ ofLength 6
-    [d6, d0] = sortBy (comparing
-               (length . intersect d1))
-             $ filter (/= d9)
-             $ ofLength 6
-    digitList = [d0, d1, d2, d3, d4, d5, d6, d7, d8, d9]
+  -- returns an array of lengths of intersects with each outlier
+  -- it stays stable even as the digits are switched around
+  fingerprintsFrom digitSet = map fp where
+    fp digit = map (length . intersect digit) $ outliers digitSet
 
-    digits = map (\d -> fromJust $ elemIndex d digitList) output
-    asNumber = foldr (\d n -> n * 10 + d) 0 $ reverse digits
-
--- nice bruteforce solution, about 920ms
-part2' :: [[[String]]] -> Int
-part2' = sum . map translate where
-  ogDigits = ["abcefg", "cf", "acdeg", "acdfg", "bcdf",
-              "abdfg", "abdefg", "acf", "abcdefg", "abcdfg"]
-  ogKey = "abcdefg"
-  permute key = sort
-              . map (key !!)
-              . map (\x -> fromJust $ elemIndex x ogKey)
-  allTrans = map (\key -> map (permute key) ogDigits)
-           $ permutations "abcdefg"
-
-  translate [input', output'] = number where
-    input  = map sort input'
-    output = map sort output'
-    correctTrans = head $ filter (\t -> sort t == sort input) allTrans
-    findDigit d = fromJust $ elemIndex d correctTrans
-    digits = map findDigit output
-    number = foldr (\d n -> n * 10 + d) 0 $ reverse digits
+  translate [input, output]
+    = foldr (\d n -> n * 10 + d) 0 $ reverse -- convert digit list to Int
+    $ map (\x -> fromJust
+               $ elemIndex x        -- match them with the fingerprints of the original digits
+               $ fingerprintsFrom ogDigits ogDigits)
+    $ fingerprintsFrom input output -- find the fingerprints of the output digits
 
 
 main :: IO ()
 main = interact $ wrapper . preprocess where
   wrapper arg = "part 1:\n" ++ (show $ part1 arg)
          ++ "\n\npart 2:\n" ++ (show $ part2 arg)
-         ++ "\n\npart 2 alt:\n" ++ (show $ part2' arg)
