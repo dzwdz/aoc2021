@@ -26,7 +26,7 @@ closing '[' = ']'
 closing '{' = '}'
 closing '<' = '>'
 
-data ParseError = Unfinished | Mismatched Char
+data ParseError = Unfinished [Char] | Mismatched Char
   deriving (Show)
 
 dumbParse str = dumbParse' str [] where
@@ -36,7 +36,7 @@ dumbParse str = dumbParse' str [] where
       mapRight (\rest -> [head stack] ++ rest)
                $ dumbParse' xs (tail stack)
     | otherwise = Left $ Mismatched x
-  dumbParse' [] _ = Left Unfinished
+  dumbParse' [] stack = Left $ Unfinished $ map closing stack
 
 
 preprocess = lines
@@ -52,7 +52,22 @@ part1 = sum
   score '}' = 1197
   score '>' = 25137
 
-part2 _ = "TODO"
+part2 = middle . sort
+      . map score
+      . catMaybes
+      . map (\x -> case x of
+          Left (Unfinished r) -> Just r
+          _ -> Nothing)
+      . map dumbParse where
+  score = foldr (\c total -> partial c + total * 5) 0
+        . reverse
+  partial ')' = 1
+  partial ']' = 2
+  partial '}' = 3
+  partial '>' = 4
+
+  middle [x] = x
+  middle  a = middle $ tail $ init a
 
 main :: IO ()
 main = interact $ wrapper . preprocess where
